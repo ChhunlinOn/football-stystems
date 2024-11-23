@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 
+
 const app = express();
 
 // Middleware
