@@ -5,13 +5,19 @@ const bcrypt = require('bcrypt'); // Make sure to import bcrypt
 exports.register = async (req, res) => {
     try {
         const { email, name, password } = req.body;
-        const user = new User({ email, name, password });
+
+        // Automatically set the role to "user"
+        const role = 'user';
+
+        const user = new User({ email, name, password, role });
         await user.save();
-        res.status(201).json({ message: 'User registered successfully', email, name });
+
+        res.status(201).json({ message: 'User registered successfully', email, name, role });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
 
 exports.login = async (req, res) => {
     try {
@@ -23,10 +29,13 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-        // Generate a JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
+        // Generate a JWT token including the user's role
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '3h' });
+
+        // Send the token and role in the response
+        res.json({ token, role: user.role });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
