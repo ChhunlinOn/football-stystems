@@ -8,11 +8,22 @@ exports.register = async (req, res) => {
 
         // Automatically set the role to "user"
         const role = 'user';
+        const createdAt = new Date();
 
-        const user = new User({ email, name, password, role });
+        const user = new User({ 
+            email, 
+            name, 
+            password, 
+            role, 
+            createdAt, 
+            createdBy: {
+                email,
+                name
+            }
+        });        
         await user.save();
 
-        res.status(201).json({ message: 'User registered successfully', email, name, role });
+        res.status(201).json({ message: 'User registered successfully', user});
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -33,7 +44,7 @@ exports.login = async (req, res) => {
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '3h' });
 
         // Send the token and role in the response
-        res.json({ token, role: user.role });
+        res.json({ token, role: user.role, id: user._id});
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
