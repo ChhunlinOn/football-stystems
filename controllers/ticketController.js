@@ -1,68 +1,69 @@
-const Ticket = require('../models/ticketModel');
+const Ticket = require("../models/ticketModel");
+const Match = require("../models/matchModel");
 
-// Book a new ticket
 exports.bookTicket = async (req, res) => {
   try {
     const { match_id, price, availability } = req.body;
 
-    const newTicket = new Ticket({
+    // Check if the match exists
+    const match = await Match.findById(match_id);
+    if (!match) {
+      return res.status(404).json({ message: "Match not found" });
+    }
+
+    // Create a new ticket linked to the match
+    const newTicket = await Ticket.create({
       match_id,
       price,
       availability,
     });
 
-    await newTicket.save();
-    res.status(201).json({ message: 'Ticket booked successfully', ticket: newTicket });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to book ticket', error: error.message });
+    res.status(201).json({ message: "Ticket booked successfully", ticket: newTicket });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
 // Get all tickets
 exports.getAllTickets = async (req, res) => {
   try {
-    const tickets = await Ticket.find().populate('match_id');
-    res.status(200).json(tickets);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to retrieve tickets', error: error.message });
+    const tickets = await Ticket.find().populate("match_id");  // Populate match details
+    if (tickets.length === 0) {
+      return res.status(404).json({ message: "No tickets found" });
+    }
+    res.json({ tickets });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
-// Get a ticket by ID
+// Get ticket by ID
 exports.getTicketById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const ticket = await Ticket.findById(id).populate('match_id');
-
+    const ticket = await Ticket.findById(req.params.id).populate("match_id");
     if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
+      return res.status(404).json({ message: "Ticket not found" });
     }
-
-    res.status(200).json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to retrieve ticket', error: error.message });
+    res.json({ ticket });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
-// Cancel or Update a Ticket
+// Cancel a ticket
 exports.cancelTicket = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
-
-    // Ensure the status is updated to 'canceled' if not provided
-    if (!updates.availability) {
-      updates.availability = false; // Assuming false means canceled
-    }
-
-    const ticket = await Ticket.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
-
+    const ticket = await Ticket.findByIdAndUpdate(
+      id,
+      { availability: false },
+      { new: true }
+    );
     if (!ticket) {
-      return res.status(404).json({ message: 'Ticket not found' });
+      return res.status(404).json({ message: "Ticket not found" });
     }
-
-    res.status(200).json({ message: 'Ticket updated successfully', ticket });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to update ticket', error: error.message });
+    res.json({ message: "Ticket canceled", ticket });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

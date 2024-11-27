@@ -9,15 +9,15 @@ const {
 const ticketRouter = express.Router();
 
 // Route for booking a ticket
-ticketRouter.post('/ticket', bookTicket); // POST /ticket
+ticketRouter.post('/', bookTicket);  // POST /api/tickets
 
 // Route for getting all tickets
-ticketRouter.get('/tickets', getAllTickets); // GET /tickets
+ticketRouter.get('/', getAllTickets);  // GET /api/tickets
 
 // Route for getting a ticket by ID
-ticketRouter.get('/tickets/:id', getTicketById); // GET /tickets/:id
+ticketRouter.get('/:id', getTicketById);  // GET /api/tickets/:id
 
-// Route for canceling or updating a ticket
-ticketRouter.put('/tickets/:id', cancelTicket); // PUT /tickets/:id
+// Route for canceling a ticket
+ticketRouter.put('/:id', cancelTicket);  // PUT /api/tickets/:id
 
 module.exports = ticketRouter;
