@@ -2,11 +2,6 @@ const User = require('../models/User');
 
 exports.getAllUsers = async (req, res) => {
     try {
-        // Example: Restrict access to admins only
-        if (req.user.role !== 'admins') {
-            return res.status(403).json({ message: 'Access denied: Admins only' });
-        }
-
         const users = await User.find();
         res.status(200).json(users); // Return all users
     } catch (err) {
@@ -78,10 +73,6 @@ exports.updateUser = async (req, res) => {
 exports.Deleteuser = async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
-
-        if (req.user.role !== 'admins') {
-            return res.status(403).json({ message: 'Access denied: Admins only' });
-        }
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
