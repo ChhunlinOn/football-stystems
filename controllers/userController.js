@@ -29,28 +29,49 @@ exports.geteachUsers = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     try {
+        // Find the user by ID
         const user = await User.findById(req.params.id);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Update the fields directly
-        Object.assign(user, req.body);
+        // Get the current date and the user performing the update
+        const updatedAt = new Date();
+        const updatedBy = req.user._id;
 
-          // Explicitly mark the password as modified if it is being updated
-          if (req.body.password) {
+        // Prepare the updated user data (similar to your footballer example)
+        const updatedUser = {
+            email: req.body.email || user.email, // Default to current values if not updated
+            name: req.body.name || user.name,
+            password: req.body.password || user.password,
+            role: req.body.role || user.role,
+            updatedAt,
+            updatedBy
+        };
+
+        // Update the fields using Object.assign to ensure the user object is updated
+        Object.assign(user, updatedUser);
+
+        // Explicitly mark the password as modified if it is being updated
+        if (req.body.password) {
             user.markModified('password');
         }
 
-        // Save the updated user (triggers `pre('save')`)
+        // Save the updated user
         await user.save();
 
-        res.status(200).json({ message: 'User updated successfully', user });
+        // Populate `createdBy` and `updatedBy` references
+        const populatedUser = await User.findById(req.params.id).populate('createdBy updatedBy');
+
+        // Respond with the updated user
+        res.status(200).json({ message: 'User updated successfully', user: populatedUser });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
+
 
 
 
