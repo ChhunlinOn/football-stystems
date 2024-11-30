@@ -14,12 +14,7 @@ const buyingSchema = new mongoose.Schema({
   purchase_date: {
     type: Date,
     default: Date.now,
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'completed', 'canceled'],
-    default: 'pending',
-  },
+  }
 });
 
 const Buying = mongoose.model('Buying', buyingSchema);

@@ -7,29 +7,48 @@ exports.buyTicket = async (req, res) => {
   try {
     const { user_id, ticket_id } = req.body;
 
-    // Check if the ticket is available
+    // Check if the ticket exists
     const ticket = await Ticket.findById(ticket_id);
-    if (!ticket || !ticket.availability) {
-      return res.status(400).json({ message: 'Ticket is not available' });
+    if (!ticket) {
+      return res.status(400).json({ message: "Ticket not found" });
     }
 
-    // Create a new purchase
+    // Check if the ticket is available
+    if (!ticket.availability) {
+      return res.status(404).json({ message: "Ticket unavailability" });
+    }
+
+    // Optionally, check if the user has already booked this ticket
+    // Uncomment the code below if you want to prevent multiple bookings by the same user
+    // const existingPurchase = await Buying.findOne({ user_id, ticket_id });
+    // if (existingPurchase) {
+    //   return res.status(400).json({ message: "User has already booked this ticket" });
+    // }
+
+    // Create a new purchase record
     const newPurchase = new Buying({
       user_id,
       ticket_id,
     });
 
+    // Save the purchase record
     await newPurchase.save();
 
-    // Update ticket availability
-    ticket.availability = false;
-    await ticket.save();
+    // Optionally, update ticket availability if needed
+    // If you want to disable further bookings, set availability to false
+    // ticket.availability = false;
+    // await ticket.save();
 
-    res.status(201).json({ message: 'Ticket purchased successfully', purchase: newPurchase });
+    res.status(201).json({
+      message: "Ticket purchased successfully",
+      purchase: newPurchase,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to purchase ticket', error: error.message });
+    res.status(500).json({ message: "Failed to purchase ticket", error: error.message });
   }
 };
+
+
 
 // Get all purchases
 exports.getAllPurchases = async (req, res) => {

@@ -7,7 +7,7 @@ exports.register = async (req, res) => {
         const { email, name, password } = req.body;
 
         // Automatically set the role to "user"
-        const role = 'user';
+        const role = 'users';
         const createdAt = new Date();
 
         const user = new User({ 

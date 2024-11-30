@@ -15,14 +15,14 @@ exports.getAllMatches = async (req, res) => {
 
 exports.createMatch = async (req, res) => {
   try {
-    const { id, title, team1, team2, date, location } = req.body;
+    const { title, team1, team2, date, location } = req.body;
 
     const existingMatch = await Match.findOne({ id });
     if (existingMatch) {
       return res.status(400).json({ message: "Match with this ID already exists" });
     }
 
-    const newMatch = await Match.create({ id, title, team1, team2, date, location });
+    const newMatch = await Match.create({ title, team1, team2, date, location });
 
     res
       .status(201)
@@ -35,17 +35,18 @@ exports.createMatch = async (req, res) => {
 exports.updateMatch = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(id);
     const { title, team1, team2, date, location } = req.body;
 
-    const updatedMatch = await Match.findOneAndUpdate(
-      { id },
+    const updatedMatch = await Match.findByIdAndUpdate(
+       id ,
       { title, team1, team2, date, location },
       { new: true }
     );
 
     if (!updatedMatch) {
       return res.status(404).json({ message: "Match not found" });
-    }app.use('api/')
+    }
 
     res.json({ message: "Match updated successfully", match: updatedMatch });
   } catch (err) {
@@ -57,7 +58,7 @@ exports.updateMatch = async (req, res) => {
 exports.getMatch = async (req, res) => {
   try {
 
-    const match = await Match.findOne(req.params.id);
+    const match = await Match.findById(req.params.id);
 
     if (!match) {
       return res.status(404).json({ message: "Match not found" });
@@ -73,7 +74,7 @@ exports.deleteMatch = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const deletedMatch = await Match.findOneAndDelete({ id });
+    const deletedMatch = await Match.findByIdAndDelete( id );
 
     if (!deletedMatch) {
       return res.status(404).json({ message: "Match not found" });

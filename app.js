@@ -16,6 +16,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/footballers', footballerRoutes);
 app.use('/api/tickets', ticketRoutes);  // Corrected line
-app.use('/api/buyings', buyingRoutes);  // Also fixed the space in the route
+app.use('/api/booking', buyingRoutes);  // Also fixed the space in the route
 
 module.exports = app;

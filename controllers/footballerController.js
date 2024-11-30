@@ -1,16 +1,38 @@
 
 const Footballer = require ('../models/footballerModels');
 
-//create
-exports.createFooterballer = async (req, res) => {
+exports.createFootballer = async (req, res) => {
     try {
-        const footballer =new Footballer (req.body);
+        const { name, age, position, nationality, club, shirtNumber, birthDate } = req.body;
+
+        // Check if a footballer with the same name already exists
+        const existingFootballer = await Footballer.findOne({ name });
+
+        if (existingFootballer) {
+            return res.status(400).json({ error: 'Footballer with this name already exists.' });
+        }
+
+        // If not, create a new footballer
+        const footballer = new Footballer({
+            name,
+            age,
+            position,
+            nationality,
+            club,
+            shirtNumber,
+            birthDate,
+        });
+
+        // Save the new footballer to the database
         await footballer.save();
+        
+        // Respond with the created footballer
         res.status(200).json(footballer);
-    } catch(error){
-        res.status(400).json({error: error.message});
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
 };
+
 
 //Get all
 exports.getAllfootballer = async (req, res) => {
