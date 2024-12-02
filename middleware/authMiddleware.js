@@ -1,15 +1,13 @@
 const jwt = require('jsonwebtoken');
 
-// Middleware to authenticate token and check user role
 exports.authenticateToken = (roles = []) => {
-    // Convert single role to array for consistency
     if (typeof roles === 'string') {
         roles = [roles];
     }
 
     return (req, res, next) => {
         const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split(' ')[1]; // Extract token from "Bearer <token>"
+        const token = authHeader && authHeader.split(' ')[1];
 
         if (!token) {
             return res.status(401).json({ message: 'Access token required' });
@@ -20,10 +18,12 @@ exports.authenticateToken = (roles = []) => {
                 return res.status(403).json({ message: 'Invalid or expired token' });
             }
 
-            // Attach user info to the request
+            if (!user || !user.id) {
+                return res.status(400).json({ message: 'Malformed token payload' });
+            }
+
             req.user = user;
 
-            // Check if the user's role is allowed
             if (roles.length && !roles.includes(user.role)) {
                 return res.status(403).json({ message: 'Access denied' });
             }

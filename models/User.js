@@ -6,12 +6,11 @@ const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },
     password: { type: String, required: true },
     role: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
-    avatar: { type: String},
-    updatedAt: { type: Date},
-    createdBy: { type: Object},
-    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User'}
-});
+    avatar: { type: String },
+    createdBy: { type: Object },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, { timestamps: true }); // Enable timestamps
+
 
 // Hash the password before saving the user
 UserSchema.pre('save', async function (next) {

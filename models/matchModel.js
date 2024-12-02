@@ -17,10 +17,14 @@ const matchSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  seats: {
+    type: Number,
+    required: true,
+  },
   location: {
     type: String,
-    default: "Unknown",
+    require: true,
   },
-});
+},{ timestamps: true });
 
 module.exports = mongoose.model("Match", matchSchema);

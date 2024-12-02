@@ -1,53 +1,89 @@
 const Buying = require('../models/buyingModel');
-const Ticket = require('../models/ticketModel');
+const tickets = require('../models/ticketModel')
+const matchs = require('../models/matchModel')
 
 
-// Buy a Ticket
 exports.buyTicket = async (req, res) => {
   try {
     const { user_id, ticket_id } = req.body;
+    const createby = req.user.id;
+    console.log(createby);
 
     // Check if the ticket exists
-    const ticket = await Ticket.findById(ticket_id);
+    const ticket = await tickets.findById(ticket_id);
     if (!ticket) {
       return res.status(400).json({ message: "Ticket not found" });
     }
 
     // Check if the ticket is available
     if (!ticket.availability) {
-      return res.status(404).json({ message: "Ticket unavailability" });
+      return res.status(404).json({ message: "Ticket unavailable" });
     }
-
-    // Optionally, check if the user has already booked this ticket
-    // Uncomment the code below if you want to prevent multiple bookings by the same user
-    // const existingPurchase = await Buying.findOne({ user_id, ticket_id });
-    // if (existingPurchase) {
-    //   return res.status(400).json({ message: "User has already booked this ticket" });
-    // }
 
     // Create a new purchase record
     const newPurchase = new Buying({
       user_id,
       ticket_id,
+      new: true
     });
 
     // Save the purchase record
     await newPurchase.save();
 
-    // Optionally, update ticket availability if needed
-    // If you want to disable further bookings, set availability to false
-    // ticket.availability = false;
-    // await ticket.save();
+    // // Populate user, ticket, and match details
+    // const populatedPurchase = await Buying.findById(newPurchase._id)
+    //   .populate('user_id', 'name email avatar') // Populate User details
+    //   .populate({
+    //     path: 'ticket_id',
+    //     select: 'price availability match_id',
+    //   });
 
-    res.status(201).json({
-      message: "Ticket purchased successfully",
-      purchase: newPurchase,
-    });
+      const ticketid = newPurchase.ticket_id;
+      console.log(ticketid);
+      
+      const findticket = await tickets.findById(
+        ticketid ,
+      );
+      
+      if (!findticket) {
+    return res.status(404).json({ message: "ticket not found" });
+  }
+
+      const matchid = findticket.match_id;
+      console.log(matchid);
+
+      const match = await matchs.findById(matchid); // Fetch the match document
+
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      if (match.seats <= 0) {
+        return res.status(400).json({ message: "No seats available" });
+      }
+
+      const updatematch = await matchs.findByIdAndUpdate(
+        matchid,
+        { seats: match.seats - 1 },
+        {new: true}
+      );
+
+      // if (!updatematch) {
+      //   return res.status(404).json({ message: "match not found" });
+      // }
+
+  res.status(201).json({
+    message: "Ticket purchased successfully",
+    purchase: newPurchase,
+    ticket: findticket,
+    match: updatematch
+  });
+
+
   } catch (error) {
     res.status(500).json({ message: "Failed to purchase ticket", error: error.message });
   }
 };
-
 
 
 // Get all purchases
@@ -55,7 +91,10 @@ exports.getAllPurchases = async (req, res) => {
   try {
     const purchases = await Buying.find()
       .populate('user_id', 'name email') // Populate user details
-      .populate('ticket_id'); // Populate ticket details
+      .populate({
+        path: 'ticket_id',
+        select: 'price availability match_id', // Select fields from the Ticket model
+      });
 
     res.status(200).json(purchases);
   } catch (error) {
@@ -63,13 +102,18 @@ exports.getAllPurchases = async (req, res) => {
   }
 };
 
+
 // Get purchase by ID
 exports.getPurchaseById = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(id);
     const purchase = await Buying.findById(id)
       .populate('user_id', 'name email')
-      .populate('ticket_id');
+      .populate({
+        path: 'ticket_id',
+        select: 'price availability match_id', // Select fields from the Ticket model
+      });
 
     if (!purchase) {
       return res.status(404).json({ message: 'Purchase not found' });
@@ -86,24 +130,61 @@ exports.cancelPurchase = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const purchasecheck = await Buying.findById(id);
+
+    if (purchasecheck.status === 'canceled') {
+      return res.status(404).json({ message: 'Purchase is already canceled' });
+    }
+
     const purchase = await Buying.findByIdAndUpdate(
       id,
       { status: 'canceled' },
       { new: true }
     );
 
+
     if (!purchase) {
       return res.status(404).json({ message: 'Purchase not found' });
     }
 
-    // Update ticket availability
-    const ticket = await Ticket.findById(purchase.ticket_id);
-    if (ticket) {
-      ticket.availability = true;
-      await ticket.save();
+    const ticketid = purchase.ticket_id;
+    console.log(ticketid);
+    
+    const findticket = await tickets.findById(
+      ticketid ,
+    );
+    
+    if (!findticket) {
+  return res.status(404).json({ message: "ticket not found" });
+}
+
+    const matchid = findticket.match_id;
+    console.log(matchid);
+
+    const match = await matchs.findById(matchid); // Fetch the match document
+
+    if (!match) {
+      return res.status(404).json({ message: "Match not found" });
+    }
+    
+    if (match.seats <= 0) {
+      return res.status(400).json({ message: "No seats available" });
     }
 
-    res.status(200).json({ message: 'Purchase canceled successfully', purchase });
+    const updatematch = await matchs.findByIdAndUpdate(
+      matchid,
+      { seats: match.seats + 1 },
+      {new: true}
+    );
+
+    // // Update ticket availability
+    // const ticket = await tickets.findById(purchase.ticket_id);
+    // if (ticket) {
+    //   ticket.availability = true;
+    //   await ticket.save();
+    // }
+
+    res.status(200).json({ message: 'Purchase canceled successfully', purchase , updatematch});
   } catch (error) {
     res.status(500).json({ message: 'Failed to cancel purchase', error: error.message });
   }

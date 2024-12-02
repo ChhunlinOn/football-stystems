@@ -18,6 +18,6 @@ buyingRouter.get('/purchases', getAllPurchases); // GET /purchases
 buyingRouter.get('/purchases/:id', getPurchaseById); // GET /purchases/:id
 
 // Route to cancel a purchase
-buyingRouter.put('/purchases/:id', cancelPurchase); // PUT /purchases/:id
+buyingRouter.put('/purchases/canceled/:id', cancelPurchase); // PUT /purchases/:id
 
 module.exports = buyingRouter;

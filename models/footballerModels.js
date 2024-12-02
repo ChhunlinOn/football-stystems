@@ -8,7 +8,7 @@ const footballerSchema = new mongoose.Schema({
     club: { type: String, required: true },                 
     shirtNumber: { type: Number, required: true },                      
     birthDate: { type: Date, required: true },       
-}) ;
+},{ timestamps: true }) ;
 
 module.exports = mongoose.model ("footballer" , footballerSchema);
 

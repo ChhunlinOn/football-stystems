@@ -13,11 +13,7 @@ const ticketSchema = new mongoose.Schema({
   availability: {
     type: Boolean,
     default: true,  // True for available, false for unavailable
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  }
+},{ timestamps: true });
 
 module.exports = mongoose.model("Ticket", ticketSchema);

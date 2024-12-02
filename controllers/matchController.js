@@ -15,14 +15,14 @@ exports.getAllMatches = async (req, res) => {
 
 exports.createMatch = async (req, res) => {
   try {
-    const { title, team1, team2, date, location } = req.body;
+    const { title, team1, team2, date, location, seats } = req.body;
 
-    const existingMatch = await Match.findOne({ id });
-    if (existingMatch) {
-      return res.status(400).json({ message: "Match with this ID already exists" });
-    }
+    // const existingMatch = await Match.findOne({ id });
+    // if (existingMatch) {
+    //   return res.status(400).json({ message: "Match with this ID already exists" });
+    // }
 
-    const newMatch = await Match.create({ title, team1, team2, date, location });
+    const newMatch = await Match.create({ title, team1, team2, date, location, seats });
 
     res
       .status(201)
@@ -36,11 +36,11 @@ exports.updateMatch = async (req, res) => {
   try {
     const { id } = req.params;
     console.log(id);
-    const { title, team1, team2, date, location } = req.body;
+    const { title, team1, team2, date, location, seats } = req.body;
 
     const updatedMatch = await Match.findByIdAndUpdate(
        id ,
-      { title, team1, team2, date, location },
+      { title, team1, team2, date, location, seats },
       { new: true }
     );
 

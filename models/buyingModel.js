@@ -11,10 +11,15 @@ const buyingSchema = new mongoose.Schema({
     ref: 'Ticket', // Assuming you have a 'Ticket' model
     required: true,
   },
+  status: {
+    type: String,
+    enum: ['booked', 'canceled'], // Define the allowed values
+    default: 'booked', // Set the default value
+  },
   purchase_date: {
     type: Date,
     default: Date.now,
-  }
+  },
 });
 
 const Buying = mongoose.model('Buying', buyingSchema);
